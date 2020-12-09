@@ -1,0 +1,247 @@
+<!--
+ * @Author: your name
+ * @Date: 2020-12-04 15:48:06
+ * @LastEditTime: 2020-12-07 09:07:07
+ * @LastEditors: Please set LastEditors
+ * @Description: In User Settings Edit
+ * @FilePath: \aeForJSApp-Demo\Demo5-popup\popup.html
+-->
+<!--
+ * @Author: your name
+ * @Date: 2020-12-03 17:35:06
+ * @LastEditTime: 2020-12-03 18:24:03
+ * @LastEditors: Please set LastEditors
+ * @Description: In User Settings Edit
+ * @FilePath: \aeForJSApp-Demo\Demo-3\Select-basemap.html
+-->
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Select-basemap</title>
+    <style>
+        html,
+        body,
+        #viewDiv {
+            padding: 0;
+            margin: 0;
+            height: 100%;
+            width: 100%;
+        }
+    </style>
+    <link rel="stylesheet" href="https://js.arcgis.com/4.17/esri/themes/light/main.css">
+    <script src="https://js.arcgis.com/4.17/"></script>
+</head>
+
+<body>
+    <div id="viewDiv"></div>
+    <script>
+        require(['esri/Map',
+            'esri/widgets/BasemapToggle',
+            'esri/widgets/BasemapGallery',
+            'esri/views/SceneView',
+            'esri/layers/FeatureLayer'
+        ], function (Map, BasemapToggle, BasemapGallery, SceneView, FeatureLayer) {
+            var map = new Map({
+                basemap: "topo-vector",
+                ground: 'world-elevation' // 指定地图的表面属性。此属性仅在将地图添加到 3D 场景视图时才相关
+            });
+
+            var view = new SceneView({
+                container: "viewDiv",
+                map,
+                //center: [-118.80500, 34.02700], // longitude, latitude
+                //zoom: 13
+                camera: {
+                    position: {
+                        x: -120.08,
+                        y: 28.58,
+                        z: 15000
+                    },
+                    tilt: 60
+                }
+            });
+            // 可以在两景basemap中切换
+            var basemapToggle = new BasemapToggle({
+                view,
+                nextBasemap: 'satellite'
+            });
+
+            // 该组件提供了在多景basemap中切换的功能
+            var basemapGallery = new BasemapGallery({
+                view,
+                source: {
+                    portal: {
+                        url: "https://www.arcgis.com",
+                        useVectorBasemaps: true // Load vector tile basemaps
+                    }
+                }
+            });
+
+            var popup_bikeTrails = {
+                title: "自行车道路信息",
+                //*** ADD ***//
+                // content: function(){
+                //    return "This is {TRL_NAME} with {ELEV_GAIN} ft of climbing.";
+                // }, {
+                expressionInfos: [{
+                        name: "elevation-ratio",
+                        title: "Elevation change",
+                        expression: "Round((($feature.ELEV_MAX - $feature.ELEV_MIN)/($feature.LENGTH_MI)/5280)*100,2)",
+                    },
+                    {
+                        name: "elevation-format",
+                        title: "format",
+                        expression: 'Round($feature.LENGTH_MI,2)'
+                    }
+                ],
+                content: "The {TRL_NAME} trail average slope per mile is: {expression/elevation-ratio}% over a total of {expression/elevation-format} miles."
+            };
+
+            var popup_Trails = {
+                title: '道路信息',
+                expressionInfos: [
+                    // 定义用来格式化海拔的表达式
+                    {
+                        name: "elevation-formatElev",
+                        title: "道路平均海拔",
+                        expression: '$feature.ELEV_GAIN + "m"'
+                    }
+                ],
+                content: [
+
+                    {
+                        type: 'text',
+                        text: "The {TRL_NAME} trail average slope per mile is: {expression/elevation}% over a total of {LENGTH_MI} miles.：： {ELEV_GAIN}"
+                    },
+                    {
+                        type: "fields",
+                        fieldInfos: [{
+                                fieldName: 'TRL_NAME',
+                                label: '道路名',
+                                isEditable: true,
+                                tooltip: '',
+                                visible: true,
+                                format: null,
+                                stringFieldOption: 'text-box'
+                            },
+                            {
+                                fieldName: 'expression/elevation-formatElev',
+                                label: '道路平均海拔(米)',
+                                isEditable: true,
+                                tooltip: '',
+                                visible: true,
+                                format: null,
+                                stringFieldOption: 'text-box'
+                            }
+                        ]
+                    },
+                    {
+                        type: 'media',
+                        mediaInfos: [{
+                            type: "column-chart",
+                            caption: "",
+                            value: {
+                                fields: ["ELEV_MIN", "ELEV_MAX"],
+                                normalizeField: null,
+                                tooltipField: "Min and max elevation values"
+                            }
+                        }]
+                    }
+
+                ]
+
+            };
+            var trails = new FeatureLayer({
+                url: "https://services3.arcgis.com/GVgbJbqm8hXASVYi/arcgis/rest/services/Trails_Styled/FeatureServer/0",
+                outFields: ["TRL_NAME", "ELEV_GAIN", "ELEV_MIN", "ELEV_MAX"],
+                popupTemplate: popup_Trails
+            });
+            var bike_trailsLayer = new FeatureLayer({
+                url: "https://services3.arcgis.com/GVgbJbqm8hXASVYi/arcgis/rest/services/Trails/FeatureServer/0",
+                outFields: ["*"],
+                popupTemplate: popup_bikeTrails,
+                definitionExpression: "USE_BIKE = 'YES'",
+                renderer: {
+                    type: 'simple',
+                    symbol: {
+                        type: 'line-3d',
+                        symbolLayers: [{
+                            type: 'line',
+                            size: 1,
+                            material: {
+                                color: 'red'
+                            },
+                            cap: 'round', // The style used to draw the endpoint of a line.
+                            join: 'round' // The style used to draw the intersection of two line segments within a line geometry.
+                        }]
+                    }
+
+                }
+
+            });
+            var popupOpenspaces = {
+                title: "{PARK_NAME}",
+                content: [{
+                    type: "fields",
+                    fieldInfos: [{
+                            fieldName: "AGNCY_NAME",
+                            label: "Agency",
+                            isEditable: true,
+                            tooltip: "",
+                            visible: true,
+                            format: null,
+                            stringFieldOption: "text-box"
+                        },
+                        {
+                            fieldName: "TYPE",
+                            label: "Type",
+                            isEditable: true,
+                            tooltip: "",
+                            visible: true,
+                            format: null,
+                            stringFieldOption: "text-box"
+                        },
+                        {
+                            fieldName: "ACCESS_TYP",
+                            label: "Access",
+                            isEditable: true,
+                            tooltip: "",
+                            visible: true,
+                            format: null,
+                            stringFieldOption: "text-box"
+                        },
+                        {
+                            fieldName: "GIS_ACRES",
+                            label: "Acres",
+                            isEditable: true,
+                            tooltip: "",
+                            visible: true,
+                            format: {
+                                places: 3,
+                                digitSeparator: true
+                            },
+                            stringFieldOption: "text-box"
+                        }
+                    ]
+                }]
+            };
+
+            var openspaces = new FeatureLayer({
+                url: "https://services3.arcgis.com/GVgbJbqm8hXASVYi/arcgis/rest/services/Parks_and_Open_Space_Styled/FeatureServer/0",
+                outFields: ["TYPE", "PARK_NAME", "AGNCY_NAME", "ACCESS_TYP", "GIS_ACRES"],
+                popupTemplate: popupOpenspaces
+            });
+            map.add(bike_trailsLayer, 0);
+            map.add(openspaces, 1);
+            map.add(trails, 2);
+            view.ui.add(basemapToggle, 'bottom-right');
+            view.ui.add(basemapGallery, "top-right");
+
+        })
+    </script>
+</body>
+
+</html>

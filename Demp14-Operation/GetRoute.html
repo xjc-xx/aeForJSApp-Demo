@@ -1,0 +1,133 @@
+<!--
+ * @Author: your name
+ * @Date: 2020-12-08 17:30:12
+ * @LastEditTime: 2020-12-09 10:03:54
+ * @LastEditors: Please set LastEditors
+ * @Description: In User Settings Edit
+ * @FilePath: \aeForJSApp-Demo\Demp14-Operation\GetRoute.html
+-->
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no">
+    <title>ArcGIS API for JavaScript Tutorials: Get a route and directions.</title>
+    <style>
+        html,
+        body,
+        #viewDiv {
+            padding: 0;
+            margin: 0;
+            height: 100%;
+            width: 100%;
+        }
+    </style>
+
+    <link rel="stylesheet" href="https://js.arcgis.com/4.17/esri/themes/light/main.css">
+    <script src="https://js.arcgis.com/4.17/"></script>
+
+    <script>
+        require([
+            "esri/Map",
+            "esri/views/MapView",
+            "esri/tasks/RouteTask",
+            "esri/tasks/support/RouteParameters",
+            "esri/tasks/support/FeatureSet",
+            "esri/Graphic"
+        ], function (Map, MapView, RouteTask, RouteParameters, FeatureSet, Graphic) {
+
+            var map = new Map({
+                basemap: "topo-vector"
+            });
+
+            var view = new MapView({
+                container: "viewDiv",
+                map: map,
+                center: [-118.80500, 34.02700], // longitude, latitude
+                zoom: 13
+            });
+
+            /*
+                要直接使用 RouteTask，基本模式是：
+                创建任务
+                配置参数
+                求解路线，然后指定如何处理其结果并处理可能返回的任何错误。
+            */
+            var routeTask = new RouteTask({
+                url: "https://utility.arcgis.com/usrsvcs/appservices/VlM9DvPr4c14pne1/rest/services/World/Route/NAServer/Route_World/solve"
+            });
+
+            view.on("click", function (event) {
+                if (view.graphics.length === 0) {
+                    addGraphic("start", event.mapPoint);
+                } else if (view.graphics.length === 1) {
+                    addGraphic("finish", event.mapPoint);
+                    getRoute();
+                } else {
+                    view.graphics.removeAll();
+                    addGraphic("start", event.mapPoint);
+                }
+            })
+
+            var olDirections = document.createElement("ol")
+            olDirections.classList = "esri-widget esri-widget--panel esri-directions__scroller"
+            olDirections.style.marginTop = 0
+            olDirections.style.paddingTop = "15px"
+
+            var features =
+                view.ui.add(olDirections)
+
+            /*
+                根据位置和点类型创建路径点
+                type: 起点还是终点
+                point: 指定点的位置
+            */
+            function addGraphic(type, point) {
+                var graphic = new Graphic({
+                    geometry: point,
+                    symbol: {
+                        type: "simple-marker",
+                        color: type === "start" ? "white" : "black",
+                        size: "8px",
+                        outline: {
+                            color: "red",
+                            size: '1px'
+                        }
+                    }
+                })
+                view.graphics.add(graphic)
+            }
+
+            function getRoute() {
+                var routeParams = new RouteParameters({
+                    stops: new FeatureSet({
+                        features: view.graphics.toArray()
+                    }),
+                    directionsLanguage: "zh-CN",
+                    returnDirections: true
+                })
+
+                routeTask.solve(routeParams).then(function (data) {
+                    // display the route
+                    data.routeResults.forEach(result => {
+                        view.graphics.add(result.route)
+                        let features = result.directions.features
+                        features.forEach(feature => {
+                            let direction = document.createElement("li")
+                            direction.innerHTML = feature.attributes.text + " (" +
+                                feature.attributes.length.toFixed(2) + " miles)";
+                            olDirections.appendChild(direction);
+                        });
+                    });
+                })
+            }
+
+        });
+    </script>
+</head>
+
+<body>
+    <div id="viewDiv"></div>
+</body>
+
+</html>

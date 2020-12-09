@@ -1,0 +1,73 @@
+<!--
+ * @Author: your name
+ * @Date: 2020-12-09 10:23:31
+ * @LastEditTime: 2020-12-09 10:46:23
+ * @LastEditors: Please set LastEditors
+ * @Description: In User Settings Edit
+ * @FilePath: \aeForJSApp-Demo\Demo15-MapAndViews\workingWithMap.html
+-->
+
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no">
+    <title>ArcGIS API for JavaScript Tutorials: Create a Starter App</title>
+    <style>
+        html,
+        body,
+        #viewDiv {
+            padding: 0;
+            margin: 0;
+            height: 100%;
+            width: 100%;
+        }
+    </style>
+
+    <link rel="stylesheet" href="https://js.arcgis.com/4.17/esri/themes/light/main.css">
+    <script src="https://js.arcgis.com/4.17/"></script>
+
+    <script>
+        require([
+            "esri/Map",
+            "esri/WebMap",
+            "esri/views/MapView"
+        ], function (Map, WebMap, MapView) {
+
+            // First Way to create a Map 
+
+            // var myMap = new Map({ // Create a map instance
+            //     basemap: "topo-vector", // required
+            //     layers: additionalLayers        // Optionally, add additional layers collection
+            // });
+
+            // var view = new MapView({
+            //     container: "viewDiv",
+            //     map: myMap,
+            //     center: [-118.80500, 34.02700], // longitude, latitude
+            //     zoom: 13
+            // });
+
+            
+            // Second Way to create a Map 
+
+            const webMap = new WebMap({ // Define the web map reference
+                portalItem: {
+                    id: "41281c51f9de45edaf1c8ed44bb10e30",
+                    portal: "https://www.arcgis.com" // Default: The ArcGIS Online Portal
+                }
+            });
+
+            const view = new MapView({
+                map: webMap, // Load the web map
+                container: "viewDiv"
+            });
+        });
+    </script>
+</head>
+
+<body>
+    <div id="viewDiv"></div>
+</body>
+
+</html>

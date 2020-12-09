@@ -1,0 +1,79 @@
+<!--
+ * @Author: your name
+ * @Date: 2020-12-09 10:47:57
+ * @LastEditTime: 2020-12-09 11:42:04
+ * @LastEditors: Please set LastEditors
+ * @Description: In User Settings Edit
+ * @FilePath: \aeForJSApp-Demo\Demo15-MapAndViews\workingWithScene.html
+-->
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no">
+    <title>ArcGIS API for JavaScript Tutorials: Create a Starter App</title>
+    <style>
+        html,
+        body,
+        #viewDiv {
+            padding: 0;
+            margin: 0;
+            height: 100%;
+            width: 100%;
+        }
+    </style>
+
+    <link rel="stylesheet" href="https://js.arcgis.com/4.17/esri/themes/light/main.css">
+    <script src="https://js.arcgis.com/4.17/"></script>
+
+    <script>
+        require([
+            "esri/WebScene",
+            "esri/views/SceneView"
+        ], function (WebScene, SceneView) {
+
+            const webScene = new WebScene({ // Define the web scene reference
+                portalItem: {
+                    id: "579f97b2f3b94d4a8e48a5f140a6639b",
+                    portal: "https://www.arcgis.com" // Default: The ArcGIS Online Portal
+                }
+            });
+
+            var view = new SceneView({
+                container: "viewDiv",
+                map: webScene,
+                camera: {
+                    position: [
+                        -122, // lon
+                        38, // lat
+                        50000 // elevation in meters
+                    ],
+                    heading: 95, // direction the camera is looking
+                    tilt: 65 // tilt of the camera relative to the ground
+                }
+            });
+            view.popup.autoOpenEnabled = true; // Disable the default popup behavior
+
+            view.on("pointer-move", function (event) { // Listen for the click event
+                view.hitTest(event).then(function (
+                    hitTestResults) { // Search for features where the user clicked
+                    console.log(event)
+                    if (hitTestResults.results) {
+                        view.popup.open({ // open a popup to show some of the results
+                            location: view.toMap(event),
+                            title: "Hit Test Results",
+                            content: hitTestResults.results.length + "Features Found"
+                        });
+                    }
+                })
+            });
+
+        });
+    </script>
+</head>
+
+<body>
+    <div id="viewDiv"></div>
+</body>
+
+</html>

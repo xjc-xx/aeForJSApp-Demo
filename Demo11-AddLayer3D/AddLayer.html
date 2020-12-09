@@ -1,0 +1,102 @@
+<!--
+ * @Author: your name
+ * @Date: 2020-12-07 16:54:40
+ * @LastEditTime: 2020-12-07 17:30:38
+ * @LastEditors: Please set LastEditors
+ * @Description: In User Settings Edit
+ * @FilePath: \aeForJSApp-Demo\Demo11-AddLayer3D\AddLayer.html
+-->
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no">
+    <title>ArcGIS API for JavaScript Tutorials: Create a Starter App (3D)</title>
+    <style>
+        html,
+        body,
+        #viewDiv {
+            padding: 0;
+            margin: 0;
+            height: 100%;
+            width: 100%;
+        }
+    </style>
+
+    <link rel="stylesheet" href="https://js.arcgis.com/4.17/esri/themes/light/main.css">
+    <script src="https://js.arcgis.com/4.17/"></script>
+
+    <script>
+        require([
+            "esri/WebScene",
+            "esri/views/SceneView",
+            "esri/layers/FeatureLayer",
+            "esri/widgets/Legend",
+            "esri/widgets/CoordinateConversion"
+        ], function (WebScene, SceneView, FeatureLayer, Legend, CoordinateConversion) {
+
+            //*** ADD ***//
+            var webscene = new WebScene({
+                portalItem: {
+                    id: "579f97b2f3b94d4a8e48a5f140a6639b"
+                }
+            });
+
+            var view = new SceneView({
+                container: "viewDiv",
+                map: webscene,
+
+            });
+
+            var legend = new Legend({
+                view,
+            })
+
+            var coordsWidget = document.createElement("div");
+            coordsWidget.id = "coordsWidget";
+            coordsWidget.className = "esri-widget esri-component";
+            coordsWidget.style.padding = "7px 15px 5px";
+
+            var coordinateConversionWidget = new CoordinateConversion({
+                view: view
+            });
+
+            view.ui.add(coordinateConversionWidget, "bottom-right");
+
+            view.ui.add(coordsWidget, "bottom-right");
+            // view.ui.add(legend, "bottom-left")
+
+            function showCoordinates(pt) {
+                //*** UPDATE ***//
+                var coords =
+                    "Lat/Lon " +
+                    pt.x.toFixed(3) +
+                    " " +
+                    pt.y.toFixed(3) +
+                    " | Scale 1:" +
+                    Math.round(view.scale * 1) / 1 +
+                    " | Zoom " +
+                    view.zoom;
+                coordsWidget.innerHTML = coords;
+            }
+            view.watch("stationary", function (isStationary) {
+                showCoordinates(view.center);
+            });
+
+            view.on("pointer-move", function (evt) {
+                showCoordinates(view.toMap({
+                    x: evt.x,
+                    y: evt.y
+                }))
+
+            })
+
+        });
+    </script>
+</head>
+
+<body>
+    <div id="viewDiv"></div>
+</body>
+
+</html>
