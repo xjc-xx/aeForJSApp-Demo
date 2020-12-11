@@ -42,45 +42,12 @@
              * carbon storage.
              *****************************************************************/
 
-            var renderer = {
-                type: "simple", // autocasts as new SimpleRenderer()
-                symbol: {
-                    type: "web-style", // autocasts as new WebStyleSymbol()
-                    styleName: "esriRealisticTreesStyle",
-                    name: "Other"
-                },
-                label: "tree",
-                visualVariables: [{
-                        type: "size",
-                        axis: "height",
-                        field: "Height", // tree height
-                        valueUnit: "feet"
-                    },
-                    {
-                        type: "color",
-                        field: "C_Storage", // Carbon storage
-                        stops: [{
-                                value: 0,
-                                color: "#f7fcb9"
-                            }, // features with zero carbon
-                            {
-                                value: 10000,
-                                color: "#31a354"
-                            } // features with 800 carbon
-                        ],
-                        legendOptions: {
-                            title: "Carbon Storage"
-                        }
-                    }
-                ]
-            };
-
             var crownRenderer = {
                 type: "simple", // autocasts as new SimpleRenderer()
                 symbol: {
                     type: "web-style", // autocasts as new WebStyleSymbol()
-                    styleName: "esriRealisticTreesStyle",
-                    name: "Other"
+                    name: "Fire_Hydrant",
+                    styleName: "EsriRealisticStreetSceneStyle"
                 }, // set from the code snippet in step 3
                 visualVariables: [{
                         type: "size",
@@ -108,11 +75,11 @@
                 field: "C_Storage", // Carbon storage
                 stops: [{
                         value: 0,
-                        color: "#f7fcb9"
+                        color: "#b7cd98"
                     }, // features with zero carbon
                     {
                         value: 10000,
-                        color: "#31a354"
+                        color: "#375b06"
                     } // features with 8000 carbon
                 ]
             });

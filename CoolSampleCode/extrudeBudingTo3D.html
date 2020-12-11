@@ -1,0 +1,119 @@
+<!--
+ * @Author: your name
+ * @Date: 2020-12-11 09:05:34
+ * @LastEditTime: 2020-12-11 11:00:49
+ * @LastEditors: Please set LastEditors
+ * @Description: In User Settings Edit
+ * @FilePath: \aeForJSApp-Demo\CoolSampleCode\extrudeBudingTo3D.html
+-->
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no">
+    <title>ArcGIS API for JavaScript Tutorials: Create a Starter App</title>
+    <style>
+        html,
+        body,
+        #viewDiv {
+            padding: 0;
+            margin: 0;
+            height: 100%;
+            width: 100%;
+        }
+    </style>
+
+    <link rel="stylesheet" href="https://js.arcgis.com/4.17/esri/themes/light/main.css">
+    <script src="https://js.arcgis.com/4.17/"></script>
+
+    <script>
+        require([
+            "esri/Map",
+            "esri/views/SceneView",
+            "esri/layers/FeatureLayer",
+            "esri/widgets/Legend"
+        ], function (Map, SceneView, FeatureLayer, Legend) {
+
+            var map = new Map({
+                basemap: "osm",
+                ground: "world-elevation"
+            });
+
+            var view = new SceneView({
+                container: "viewDiv",
+                map: map,
+                camera: {
+                    position: {
+                        x: -13162054.208348304,
+                        y: 4036034.256594745,
+                        z: 129,
+                        spatialReference: {
+                            // Basically yes, one is a new ID and one is an old ID
+                            // latestWkid: 3857,
+                            wkid: 102100
+                        }
+                    },
+                    heading: 300,
+                    tilt: 75
+                }
+            });
+
+
+            var layer = new FeatureLayer({
+                portalItem: {
+                    id: "8573b205d20d4be38b6e11eb05dd151b"
+                },
+                outFields: ['*'],
+                // definitionExpression: "ELEVATION > 0"
+            })
+
+
+            layer.when().then(function () {
+                const renderer = layer.renderer.clone()
+                renderer.uniqueValueInfos.forEach(info => {
+                    info.symbol = {
+                        type: "polygon-3d", // autocasts as new PolygonSymbol3D()
+                        symbolLayers: [{
+                            type: "extrude", // autocasts as new ExtrudeSymbol3DLayer()
+                            material: {
+                                color: info.symbol.color // green
+                            },
+                            edges: {
+                                type: "solid",
+                                color: "#4d5b18", // dark green
+                                size: 1.5
+                            }
+                        }]
+                    }
+                });
+                // Add a size visual variable to extrude real-world heights
+                renderer.visualVariables = [{
+                    type: "size",
+                    axis: "height",
+                    field: "height",
+                    // valueUnit: "feet" // converts and extrudes all data values in feet
+                }]
+                layer.renderer = renderer;
+            })
+
+
+            map.add(layer)
+
+            legend = new Legend({
+                view: view
+            })
+            view.whenLayerView(layer).then(function (layerView) {
+                view.ui.add(legend, "bottom-right")
+            })
+        });
+
+
+       
+    </script>
+</head>
+
+<body>
+    <div id="viewDiv"></div>
+</body>
+
+</html>
