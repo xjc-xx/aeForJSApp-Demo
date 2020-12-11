@@ -1,0 +1,114 @@
+<!--
+ * @Author: your name
+ * @Date: 2020-12-11 16:34:05
+ * @LastEditTime: 2020-12-11 16:56:39
+ * @LastEditors: Please set LastEditors
+ * @Description: In User Settings Edit
+ * @FilePath: \aeForJSApp-Demo\Demo-1\mesh-pyramid.html
+-->
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no">
+    <title>ArcGIS API for JavaScript Tutorials: Create a Starter App</title>
+    <style>
+        html,
+        body,
+        #viewDiv {
+            padding: 0;
+            margin: 0;
+            height: 100%;
+            width: 100%;
+        }
+    </style>
+
+    <link rel="stylesheet" href="https://js.arcgis.com/4.17/esri/themes/light/main.css">
+    <script src="https://js.arcgis.com/4.17/"></script>
+
+    <script>
+        require([
+            "esri/Map",
+            "esri/views/SceneView",
+            "esri/geometry/Mesh",
+            "esri/Graphic"
+        ], function (Map, SceneView, Mesh, Graphic) {
+
+            var map = new Map({
+                basemap: "topo-vector",
+                ground: "world-elevation"
+            });
+
+            var view = new SceneView({
+                container: "viewDiv",
+                map: map,
+                camera: {
+                    position: {
+                        // observation point
+                        x: 31.134273,
+                        y: 29.97921,
+                        z: 2500 // altitude in meters
+                    },
+                    tilt: 65 // perspective in degrees
+                }
+            });
+
+            const v0 = [31.134273, 29.97921, 200]
+            const v1 = [31.135376, 29.97819, 65]
+            const v2 = [31.133112, 29.97821, 65]
+            const v3 = [31.133097, 29.98016, 65]
+            const v4 = [31.135396, 29.98017, 65]
+
+            // 顶点
+            const vertexPositions = [
+                v0[0], v0[1], v0[2], // vertex 0
+                v1[0], v1[1], v1[2], // vertex 1
+                v2[0], v2[1], v2[2], // vertex 2
+                v3[0], v3[1], v3[2], // vertex 3
+                v4[0], v4[1], v4[2], // vertex 4
+            ]
+            
+            // 每个顶点的颜色
+            const vertexColor = [
+                245, 99, 66, 0, // vertex 0
+                245, 209, 66, 255, // vertex 1
+                245, 209, 66, 255, // vertex 2
+                245, 209, 66, 255, // vertex 3
+                245, 209, 66, 255, // vertex 4
+            ]
+
+            const pyramidGeometry = new Mesh({
+                vertexAttributes: {
+                    position: vertexPositions,
+                    color: vertexColor
+                },
+                components: [{
+                    faces: [
+                        0, 1, 2,
+                        0, 2, 3,
+                        0, 3, 4,
+                        0, 4, 1
+                    ]
+                }]
+            })
+
+            const pyramidGraphic = new Graphic({
+                geometry: pyramidGeometry,
+                symbol: {
+                    type: "mesh-3d",
+                    symbolLayers: [{
+                        type: "fill"
+                    }]
+                }
+            })
+            
+            view.graphics.add(pyramidGraphic)
+        });
+    </script>
+</head>
+
+<body>
+    <div id="viewDiv"></div>
+</body>
+
+</html>
